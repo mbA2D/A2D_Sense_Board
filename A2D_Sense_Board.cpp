@@ -1,87 +1,92 @@
-/* A2D Electronics Relay Board Module Library
+/* A2D Electronics Sense Board Module Library
  * Written By: Micah Black
- * Date: Jan 22, 2021
+ * Date: Jan 24, 2023
  *
  *
  *
  *
  */
 
-#include <A2D_Relay_Board.h>
+#include <A2D_Sense_Board.h>
+#include <ADS1219.h>
 
 //constructor and initialization list
-A2D_Relay_Board::A2D_Relay_Board()
+A2D_Sense_Board::A2D_Sense_Board()
 {	
-	if (TWCR == 0) Wire.begin();
-	
-	
+	if (TWCR == 0) 
+	{
+		Wire.begin();
+	}
+	_adc = new ADS1219();
+	_v_ref = 2.5;
 }
 
-void A2D_Relay_Board::init()
+void A2D_Sense_Board::init()
 {
-	io = new TCA9539();
-	io->TCA9539_init(A2D_RELAY_BOARD_IO_EXP_ADDR_DEFAULT);
+	pinMode(A2D_SENSE_BOARD_LED_PIN, OUTPUT);
+	_adc->init(A2D_SENSE_BOARD_MIN_I2C_ADDR);
 	
-	reset();
+	ads1219_conf_reg adc_conf_reg;
+	adc_conf_reg.bits.mux = A2D_SENSE_BOARD_MUX_VOLTAGE;
+	adc_conf_reg.bits.gain = ADS1219_GAIN_1;
+	adc_conf_reg.bits.dr = ADS1219_DR_20SPS;
+	adc_conf_reg.bits.cm = ADS1219_CM_SINGLE_SHOT;
+	adc_conf_reg.bits.vref = ADS1219_VREF_EXTERNAL;
+
+	_adc->set_conf_reg(adc_conf_reg.conf_byte);
+	_adc->set_ext_ref_v_for_calc(_v_ref);
+	calibrate_adc_offset();
 }
 
-void A2D_Relay_Board::set_i2c_expander_addr(uint8_t addr)
-{
-	if (addr > A2D_RELAY_BOARD_IO_EXP_ADDR_MIN && addr < A2D_RELAY_BOARD_IO_EXP_ADDR_MAX)
-	io->TCA9539_init(addr);
-
-	reset();
-}
-
-void A2D_Relay_Board::reset()
+void A2D_Sense_Board::reset()
 {
 	//LED
-	pinMode(A2D_RELAY_BOARD_LED_PIN, OUTPUT);
-	digitalWrite(A2D_RELAY_BOARD_LED_PIN, LOW);
+	digitalWrite(A2D_SENSE_BOARD_LED_PIN, LOW);
 	
-	io->TCA9539_init();
-	
-	//Channels off
-	io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH0_PIN, TCA9539_PIN_OUT_LOW);
-	io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH1_PIN, TCA9539_PIN_OUT_LOW);
-	io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH2_PIN, TCA9539_PIN_OUT_LOW);
-	
-	//Channels pin Mode
-	io->TCA9539_set_dir(A2D_RELAY_BOARD_CH0_PIN, TCA9539_PIN_DIR_OUTPUT);
-	io->TCA9539_set_dir(A2D_RELAY_BOARD_CH1_PIN, TCA9539_PIN_DIR_OUTPUT);
-	io->TCA9539_set_dir(A2D_RELAY_BOARD_CH2_PIN, TCA9539_PIN_DIR_OUTPUT);
-	
+	_adc->reset();
 }
 
-void A2D_Relay_Board::set_led(bool state)
+float A2D_Sense_Board::measure_temperature()
 {
-	digitalWrite(A2D_RELAY_BOARD_LED_PIN, state);
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_TEMPERATURE);
+	float voltage = _adc->measure_voltage();
+	return _convert_voltage_to_temperature(voltage);
 }
 
-void A2D_Relay_Board::set_dig_out(uint8_t channel, bool output_val)
+float A2D_Sense_Board::measure_current()
 {
-	//check valid channel
-	if (!_valid_channel(channel)) return;
-	
-	TCA9539_pin_val_t val_to_write = TCA9539_PIN_OUT_LOW;
-	if (output_val) val_to_write = TCA9539_PIN_OUT_HIGH;
-	
-	if (channel == 0) io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH0_PIN, val_to_write);
-	if (channel == 1) io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH1_PIN, val_to_write);
-	if (channel == 2) io->TCA9539_set_pin_val(A2D_RELAY_BOARD_CH2_PIN, val_to_write);
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_CURRENT);
+	float voltage = _adc->measure_voltage();
+	return _convert_voltage_to_current(voltage);
 }
 
-uint8_t A2D_Relay_Board::get_num_channels()
+float A2D_Sense_Board::measure_voltage()
 {
-	return A2D_RELAY_BOARD_NUM_CHANNELS;
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_VOLTAGE);
+	return _adc->measure_voltage();
 }
 
-bool A2D_Relay_Board::_valid_channel(uint8_t channel)
+void A2D_Sense_Board::calibrate_adc_offset()
 {
-	return (channel < A2D_RELAY_BOARD_NUM_CHANNELS);
+	_adc->calibrate_offset();
 }
 
-//TODO - add a command to change the I2C Address of the IO expander.
-//I don't want to have to recompile firmware whenever a jumper is changed.
-//change I2C addr, reset expander and re-initialize
+void A2D_Sense_Board::set_led(bool state)
+{
+	digitalWrite(A2D_SENSE_BOARD_LED_PIN, state);
+}
 
+void A2D_Sense_Board::calibrate_adc_gain(float input_voltage)
+{
+	//input_voltage is the voltage measured by a DMM or set with a calibration source
+	//TODO
+}
+
+void A2D_Sense_Board::set_adc_i2c_addr(uint8_t addr)
+{
+	if (addr >= A2D_SENSE_BOARD_MIN_I2C_ADDR && addr <= A2D_Sense_Board_IO_EXP_ADDR_MAX)
+	{
+		_adc->init(addr);
+	}
+	reset();
+}
