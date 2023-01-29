@@ -32,14 +32,28 @@ class A2D_Sense_Board
 		void calibrate_adc_gain(float input_voltage);
 		void set_led(bool state);
 		void set_adc_i2c_addr(uint8_t addr);
-		
+		void set_sh_constants(float sh_a, float sh_b, float sh_c);
+
 	private:
 		//************METHODS****************
-		float _convert_voltage_to_current(float voltage);
-		float _convert_voltage_to_temperature(float voltage);
+		float _convert_adc_voltage_to_current(float voltage);
+		float _convert_adc_voltage_to_temperature(float voltage);
+		float _convert_adc_voltage_to_voltage(float voltage);
 
 		//*********VARIABLES/CLASSES*********
 		float _v_ref;
+
+		//scaling for voltages
+		float _v_scaling; // V/V
+		float _i_scaling; // A/V
+		float _t_scaling; // V/V
+		float _t_current_source; //A
+		
+		//steinhart-hart constants for 10K NTC
+		float _sh_a;
+		float _sh_b;
+		float _sh_c;
+
 		ADS1219 *_adc;
 };
 

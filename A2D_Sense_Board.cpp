@@ -19,6 +19,10 @@ A2D_Sense_Board::A2D_Sense_Board()
 	}
 	_adc = new ADS1219();
 	_v_ref = 2.5;
+	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
+	_v_scaling = A2D_SENSE_BOARD_V_SCALING;
+	_t_scaling = A2D_SENSE_BOARD_T_SCALING;
+	_t_current_source = A2D_SENSE_BOARD_T_I_SOURCE_A;
 }
 
 void A2D_Sense_Board::init()
@@ -48,22 +52,23 @@ void A2D_Sense_Board::reset()
 
 float A2D_Sense_Board::measure_temperature()
 {
-	_adc->set_mux(A2D_SENSE_BOARD_MUX_TEMPERATURE);
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_TEMP);
 	float voltage = _adc->measure_voltage();
-	return _convert_voltage_to_temperature(voltage);
+	return _convert_adc_voltage_to_temperature(voltage);
 }
 
 float A2D_Sense_Board::measure_current()
 {
 	_adc->set_mux(A2D_SENSE_BOARD_MUX_CURRENT);
 	float voltage = _adc->measure_voltage();
-	return _convert_voltage_to_current(voltage);
+	return _convert_adc_voltage_to_current(voltage);
 }
 
 float A2D_Sense_Board::measure_voltage()
 {
 	_adc->set_mux(A2D_SENSE_BOARD_MUX_VOLTAGE);
-	return _adc->measure_voltage();
+	float voltage = _adc->measure_voltage();
+	return _convert_adc_voltage_to_voltage(voltage);
 }
 
 void A2D_Sense_Board::calibrate_adc_offset()
@@ -80,13 +85,41 @@ void A2D_Sense_Board::calibrate_adc_gain(float input_voltage)
 {
 	//input_voltage is the voltage measured by a DMM or set with a calibration source
 	//TODO
+	;
 }
 
 void A2D_Sense_Board::set_adc_i2c_addr(uint8_t addr)
 {
-	if (addr >= A2D_SENSE_BOARD_MIN_I2C_ADDR && addr <= A2D_Sense_Board_IO_EXP_ADDR_MAX)
+	if (addr >= A2D_SENSE_BOARD_MIN_I2C_ADDR && addr <= A2D_SENSE_BOARD_MAX_I2C_ADDR)
 	{
 		_adc->init(addr);
 	}
 	reset();
+}
+
+void A2D_Sense_Board::set_sh_constants(float sh_a, float sh_b, float sh_c)
+{
+	_sh_a = sh_a;
+	_sh_b = sh_b;
+	_sh_c = sh_c;
+}
+
+float A2D_Sense_Board::_convert_adc_voltage_to_current(float voltage)
+{
+	return voltage * _i_scaling;
+}
+
+float A2D_Sense_Board::_convert_adc_voltage_to_temperature(float voltage)
+{
+	float voltage_corrected = voltage * _t_scaling;
+	//assume we are using the built-in current source (22.5uA)
+	float resistance = voltage_corrected / _t_current_source;
+
+	float temperature_c = (1.0/_sh_a + _sh_b * log(resistance) + _sh_c * pow(log(resistance),3.0)) - 273.15;
+	return temperature_c;
+}
+
+float A2D_Sense_Board::_convert_adc_voltage_to_voltage(float voltage)
+{
+	return voltage * _v_scaling;	
 }
