@@ -1,6 +1,11 @@
-A2D_Relay_Board				KEYWORD1
+A2D_Sense_Board				KEYWORD1
 init						KEYWORD2
 reset						KEYWORD2
-set_dig_out					KEYWORD2
+measure_temperature			KEYWORD2
+measure_current				KEYWORD2
+measure_voltage				KEYWORD2
+calibrate_adc_offset		KEYWORD2
+calibrate_adc_gain			KEYWORD2
 set_led						KEYWORD2
-get_num_channels			KEYWORD2
+set_adc_i2c_addr			KEYWORD2
+set_sh_constants			KEYWORD2

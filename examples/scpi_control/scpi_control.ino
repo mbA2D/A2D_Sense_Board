@@ -11,7 +11,7 @@ CHANGELOG:
 #include <A2D_Sense_Board.h>
 
 #define MANUFACTURER  ("A2D Electronics")
-#define DESCRIPTION ("Relay Board")
+#define DESCRIPTION ("Sense Board")
 #define VERSION     ("V1.0.0")
 #define SERIAL_NUM  ("00001")
 
