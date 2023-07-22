@@ -17,6 +17,8 @@ A2D_Sense_Board::A2D_Sense_Board()
 	{
 		Wire.begin();
 	}
+	Wire.setWireTimeout(3000, true);
+	
 	_adc = new ADS1219();
 	_v_ref = 2.5;
 	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
