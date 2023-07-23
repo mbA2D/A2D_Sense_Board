@@ -24,9 +24,9 @@ void setup() {
 	
 	sense_board.set_adc_i2c_addr(I2C_ADDRESS);
 
-  sense_board.set_sh_constants(SH_A, SH_B, SH_C);
+	sense_board.set_sh_constants(SH_A, SH_B, SH_C);
   
-  delay(2000);
+	delay(2000);
  
 }
 
@@ -34,19 +34,14 @@ void loop() {
 
 	Serial.print("V: ");
 	Serial.print(sense_board.measure_voltage());
-	Serial.println();
-	Serial.flush();
 	
 	Serial.print(" I: ");
 	Serial.print(sense_board.measure_current());
-	Serial.println();
-	Serial.flush();
 	
 	Serial.print(" T: ");
-	Serial.print(sense_board.measure_temperature());
-	Serial.println();
+	Serial.println(sense_board.measure_temperature());
 	Serial.flush();
 
- delay(100);
+	delay(100);
 
 }
