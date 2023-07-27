@@ -26,6 +26,17 @@ A2D_Sense_Board::A2D_Sense_Board()
 	_t_scaling = A2D_SENSE_BOARD_T_SCALING;
 	_t_current_source = A2D_SENSE_BOARD_T_I_SOURCE_A;
 	
+	_v_offset = 0;
+	_i_offset = 0;
+	
+	
+	_ee_addr_initialized = 0;
+	_ee_addr_serial = _ee_addr_initialized + sizeof(int);
+	_ee_addr_v_off = _ee_addr_serial + sizeof(uint32_t);
+	_ee_addr_i_off = _ee_addr_v_off + sizeof(float);
+	_ee_addr_v_scale = _ee_addr_i_off + sizeof(float);
+	_ee_addr_i_scale = _ee_addr_v_scale + sizeof(float);
+	
 	_sh_a = A2D_SENSE_BOARD_DEFAULT_SH_A;
 	_sh_b = A2D_SENSE_BOARD_DEFAULT_SH_B;
 	_sh_c = A2D_SENSE_BOARD_DEFAULT_SH_C;
@@ -43,10 +54,13 @@ void A2D_Sense_Board::init()
 	adc_conf_reg.bits.dr = ADS1219_DR_20SPS;
 	adc_conf_reg.bits.cm = ADS1219_CM_SINGLE_SHOT;
 	adc_conf_reg.bits.vref = ADS1219_VREF_EXTERNAL;
-
+	
+	
 	_adc->set_conf_reg(adc_conf_reg.conf_byte);
 	_adc->set_ext_ref_v_for_calc(_v_ref);
 	calibrate_adc_offset();
+	_init_cal_from_eeprom();
+	
 }
 
 void A2D_Sense_Board::reset()
@@ -83,19 +97,66 @@ void A2D_Sense_Board::calibrate_adc_offset()
 	_adc->calibrate_offset();
 }
 
+void A2D_Sense_Board::calibrate_current(float p1_meas, float p1_act, float p2_meas, float p2_act)
+{
+	//calculate new offset (b) and scaling (m) in:  actual = m * measured + b
+	_i_scaling = (p2_act - p1_act) / (p2_meas - p1_meas); //rise in actual / run in measured
+	_i_offset = p2_act - _i_scaling * p2_meas; //b = actual - m * measured
+	
+	//save to eeprom
+	EEPROM.put(_ee_addr_i_off, _i_offset);
+	EEPROM.put(_ee_addr_i_scale, _i_scaling);
+}
+
+void A2D_Sense_Board::calibrate_voltage(float p1_meas, float p1_act, float p2_meas, float p2_act)
+{
+	//calculate new offset (b) and scaling (m) in:  actual = m * measured + b
+	_v_scaling = (p2_act - p1_act) / (p2_meas - p1_meas); //rise in actual / run in measured
+	_v_offset = p2_act - _i_scaling * p2_meas; //b = actual - m * measured
+	
+	//save to eeprom
+	EEPROM.put(_ee_addr_v_off, _v_offset);
+	EEPROM.put(_ee_addr_v_scale, _v_scaling);
+}
+
+void A2D_Sense_Board::_init_cal_from_eeprom()
+{
+	//update all calibration values from EEPROM
+	EEPROM.get(_ee_addr_v_off, _v_offset);
+	EEPROM.get(_ee_addr_i_off, _i_offset);
+	EEPROM.get(_ee_addr_v_scale, _v_scaling);
+	EEPROM.get(_ee_addr_i_scale, _i_scaling);
+}
+
+//resets to the default calibration - assumes all components have 0% tolerance.
+void A2D_Sense_Board::reset_calibration()
+{
+	reset_current_calibration();
+	reset_voltage_calibration();
+}
+
+void A2D_Sense_Board::reset_voltage_calibration()
+{
+	_v_offset = 0;
+	_v_scaling = A2D_SENSE_BOARD_V_SCALING;
+	
+	EEPROM.put(_ee_addr_v_off, _v_offset);
+	EEPROM.put(_ee_addr_v_scale, _v_scaling);
+}
+
+void A2D_Sense_Board::reset_current_calibration()
+{
+	_i_offset = 0;
+	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
+	
+	EEPROM.put(_ee_addr_i_off, _i_offset);
+	EEPROM.put(_ee_addr_i_scale, _i_scaling);
+}
+
 void A2D_Sense_Board::set_led(bool state)
 {
 	digitalWrite(A2D_SENSE_BOARD_LED_PIN, state);
 }
-
-void A2D_Sense_Board::calibrate_adc_gain(float input_voltage)
-{
-	//input_voltage is the voltage measured by a DMM or set with a calibration source
-	//TODO
-	;
-}
-
-//TODO - calibrate voltage and current offsets separately.
 
 void A2D_Sense_Board::set_adc_i2c_addr(uint8_t addr)
 {
@@ -115,7 +176,7 @@ void A2D_Sense_Board::set_sh_constants(float sh_a, float sh_b, float sh_c)
 
 float A2D_Sense_Board::_convert_adc_voltage_to_current(float voltage)
 {
-	return voltage * _i_scaling;
+	return voltage * _i_scaling + _i_offset;
 }
 
 float A2D_Sense_Board::_convert_adc_voltage_to_temperature(float voltage)
@@ -129,5 +190,5 @@ float A2D_Sense_Board::_convert_adc_voltage_to_temperature(float voltage)
 
 float A2D_Sense_Board::_convert_adc_voltage_to_voltage(float voltage)
 {
-	return voltage * _v_scaling;	
+	return voltage * _v_scaling + _v_offset;	
 }
