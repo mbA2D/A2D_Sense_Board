@@ -133,21 +133,32 @@ void loop() {
 	const uint8_t num_floats = 4;
 	//create memory to store all the floats
 	float float_arr[num_floats];
-	for (uint8_t index = 0; index < num_floats, index++)
+	for (uint8_t index = 0; index < num_floats; index++)
 	{
 		token = strtok(NULL, delimeters);
 		char str_float[32];
 		strcpy(str_float, token);
 		float_arr[index] = String(str_float).toFloat();
-		Serial.print(float_arr[index]);
-		Serial.print(",");
 	}
+	sense_board.calibrate_voltage(float_arr[0], float_arr[1], float_arr[2], float_arr[3]);
+  }
+
+  //INSTR:CAL:CURR
+  else if (CMDIS(command, "INSTR:CAL:CURR")){
+	//parse all the floats
+	char delimeters[] = " ,";
 	
-	//need to see what format the rest is in.
-	Serial.println(ser_buf);
-	Serial.flush();
-	
-	//sense_board.calibrate_voltage(float_arr[0], float_arr[1], float_arr[2], float_arr[3]);
+	const uint8_t num_floats = 4;
+	//create memory to store all the floats
+	float float_arr[num_floats];
+	for (uint8_t index = 0; index < num_floats; index++)
+	{
+		token = strtok(NULL, delimeters);
+		char str_float[32];
+		strcpy(str_float, token);
+		float_arr[index] = String(str_float).toFloat();
+	}
+	sense_board.calibrate_current(float_arr[0], float_arr[1], float_arr[2], float_arr[3]);
   }
   
 }
@@ -183,6 +194,13 @@ void parse_serial(char ser_buf[], char command[], char *token, uint8_t *channel_
   {
 	  //now we want to parse 4 floats separated by commas
 	  //do the rest of the parsing in the function above.
+    ;
+  }
+  if (CMDIS(command, "INSTR:CAL:CURR")) //INSTR:CAL:CURR 123.123,123.123,123.123,123.123
+  {
+	  //now we want to parse 4 floats separated by commas
+	  //do the rest of the parsing in the function above.
+    ;
   }
   else
   {
