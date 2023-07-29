@@ -2,7 +2,7 @@
  * Written By: Micah Black
  * Date: Jan 24, 2023
  *
- *
+ * UPDATE Jun 29, 2023: Added calibration commands and storing calibration to EEPROM
  *
  *
  */
