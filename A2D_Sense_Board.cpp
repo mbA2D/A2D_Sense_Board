@@ -30,12 +30,12 @@ A2D_Sense_Board::A2D_Sense_Board()
 	_i_offset = 0;
 	
 	
-	_ee_addr_initialized = 0;
-	_ee_addr_serial = _ee_addr_initialized + sizeof(int);
-	_ee_addr_v_off = _ee_addr_serial + sizeof(uint32_t);
-	_ee_addr_i_off = _ee_addr_v_off + sizeof(float);
-	_ee_addr_v_scale = _ee_addr_i_off + sizeof(float);
-	_ee_addr_i_scale = _ee_addr_v_scale + sizeof(float);
+	_ee_addr_initialized = 0; //2
+	_ee_addr_serial = _ee_addr_initialized + sizeof(int); //4
+	_ee_addr_v_off = _ee_addr_serial + sizeof(uint32_t); //4
+	_ee_addr_i_off = _ee_addr_v_off + sizeof(float); //4
+	_ee_addr_v_scale = _ee_addr_i_off + sizeof(float); //4
+	_ee_addr_i_scale = _ee_addr_v_scale + sizeof(float); //4 //total 22 bytes
 	
 	_sh_a = A2D_SENSE_BOARD_DEFAULT_SH_A;
 	_sh_b = A2D_SENSE_BOARD_DEFAULT_SH_B;

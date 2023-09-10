@@ -97,8 +97,8 @@ void loop() {
 	sense_board.set_led(value_bool);
   }
   
-  //INSTR:SET:ADDR X ADDR  //X is placeholder for channel, ADDR is 7-bit right-justified address
-  else if (CMDIS(command, "INSTR:SET:ADDR")){
+  //INSTR:ADC:ADDR X ADDR  //X is placeholder for channel, ADDR is 7-bit right-justified address
+  else if (CMDIS(command, "INSTR:ADC:ADDR")){
 	sense_board.set_adc_i2c_addr(uint8_t(value_int));
   }
 
@@ -120,13 +120,13 @@ void loop() {
 	Serial.flush();
   }
   
-  //INSTR:CAL:RESET
-  else if (CMDIS(command, "INSTR:CAL:RESET")){
+  //SENSE:CAL:RESET
+  else if (CMDIS(command, "SENSE:CAL:RESET")){
 	sense_board.reset_calibration();
   }
   
-  //INSTR:CAL:VOLT
-  else if (CMDIS(command, "INSTR:CAL:VOLT")){
+  //SENSE:CAL:VOLT
+  else if (CMDIS(command, "SENSE:CAL:VOLT")){
 	//parse all the floats
 	char delimeters[] = " ,";
 	
@@ -143,8 +143,8 @@ void loop() {
 	sense_board.calibrate_voltage(float_arr[0], float_arr[1], float_arr[2], float_arr[3]);
   }
 
-  //INSTR:CAL:CURR
-  else if (CMDIS(command, "INSTR:CAL:CURR")){
+  //SENSE:CAL:CURR
+  else if (CMDIS(command, "SENSE:CAL:CURR")){
 	//parse all the floats
 	char delimeters[] = " ,";
 	
@@ -190,13 +190,13 @@ void parse_serial(char ser_buf[], char command[], char *token, uint8_t *channel_
   token = strtok(ser_buf, delimeters);
   strcpy(command, token); //copies the token into command.
   
-  if (CMDIS(command, "INSTR:CAL:VOLT")) //INSTR:CAL:VOLT 123.123,123.123,123.123,123.123
+  if (CMDIS(command, "SENSE:CAL:VOLT")) //SENSE:CAL:VOLT 123.123,123.123,123.123,123.123
   {
 	  //now we want to parse 4 floats separated by commas
 	  //do the rest of the parsing in the function above.
     ;
   }
-  if (CMDIS(command, "INSTR:CAL:CURR")) //INSTR:CAL:CURR 123.123,123.123,123.123,123.123
+  if (CMDIS(command, "SENSE:CAL:CURR")) //SENSE:CAL:CURR 123.123,123.123,123.123,123.123
   {
 	  //now we want to parse 4 floats separated by commas
 	  //do the rest of the parsing in the function above.
