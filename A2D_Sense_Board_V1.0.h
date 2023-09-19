@@ -15,8 +15,14 @@
 #define A2D_SENSE_BOARD_LED_PIN         LED_BUILTIN
 
 //scaling
-#define A2D_SENSE_BOARD_V_SCALING       10.35 // (18.7k + 2k)/2k
-#define A2D_SENSE_BOARD_I_SCALING       (-10.0) //2mOhm and 50V/V amp
+#define A2D_SENSE_BOARD_DEFAULT_V_REF		2.5
+
+#define A2D_SENSE_BOARD_V_SCALING       	10.35 // (18.7k + 2k)/2k
+#define A2D_SENSE_BOARD_DEFAULT_V_OFFSET	0
+
+#define A2D_SENSE_BOARD_I_SCALING       	(-10.0) //2mOhm and 50V/V amp
+#define A2D_SENSE_BOARD_DEFULT_I_OFFSET		0
+
 #define A2D_SENSE_BOARD_T_SCALING       1.0 //the voltage scaling on the temp input
 #define A2D_SENSE_BOARD_T_I_SOURCE_A    0.0000225 //22.5uA
 

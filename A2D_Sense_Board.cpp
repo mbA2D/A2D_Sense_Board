@@ -20,14 +20,14 @@ A2D_Sense_Board::A2D_Sense_Board()
 	Wire.setWireTimeout(3000, true);
 	
 	_adc = new ADS1219();
-	_v_ref = 2.5;
+	_v_ref = A2D_SENSE_BOARD_DEFAULT_V_REF;
 	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
 	_v_scaling = A2D_SENSE_BOARD_V_SCALING;
 	_t_scaling = A2D_SENSE_BOARD_T_SCALING;
 	_t_current_source = A2D_SENSE_BOARD_T_I_SOURCE_A;
 	
-	_v_offset = 0;
-	_i_offset = 0;
+	_v_offset = A2D_SENSE_BOARD_DEFAULT_V_OFFSET;
+	_i_offset = A2D_SENSE_BOARD_DEFAULT_I_OFFSET;
 	
 	
 	_ee_addr_initialized = 0; //2
@@ -137,7 +137,7 @@ void A2D_Sense_Board::reset_calibration()
 
 void A2D_Sense_Board::reset_voltage_calibration()
 {
-	_v_offset = 0;
+	_v_offset = A2D_SENSE_BOARD_DEFAULT_V_OFFSET;
 	_v_scaling = A2D_SENSE_BOARD_V_SCALING;
 	
 	EEPROM.put(_ee_addr_v_off, _v_offset);
@@ -146,7 +146,7 @@ void A2D_Sense_Board::reset_voltage_calibration()
 
 void A2D_Sense_Board::reset_current_calibration()
 {
-	_i_offset = 0;
+	_i_offset = A2D_SENSE_BOARD_DEFAULT_I_OFFSET;
 	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
 	
 	EEPROM.put(_ee_addr_i_off, _i_offset);
