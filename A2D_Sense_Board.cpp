@@ -102,10 +102,6 @@ void A2D_Sense_Board::calibrate_current(float p1_meas, float p1_act, float p2_me
 	//calculate new offset (b) and scaling (m) in:  actual = m * measured + b
 	_i_scaling = (p2_act - p1_act) / (p2_meas - p1_meas); //rise in actual / run in measured
 	_i_offset = p2_act - _i_scaling * p2_meas; //b = actual - m * measured
-	
-	//save to eeprom
-	EEPROM.put(_ee_addr_i_off, _i_offset);
-	EEPROM.put(_ee_addr_i_scale, _i_scaling);
 }
 
 void A2D_Sense_Board::calibrate_voltage(float p1_meas, float p1_act, float p2_meas, float p2_act)
@@ -113,10 +109,6 @@ void A2D_Sense_Board::calibrate_voltage(float p1_meas, float p1_act, float p2_me
 	//calculate new offset (b) and scaling (m) in:  actual = m * measured + b
 	_v_scaling = (p2_act - p1_act) / (p2_meas - p1_meas); //rise in actual / run in measured
 	_v_offset = p2_act - _i_scaling * p2_meas; //b = actual - m * measured
-	
-	//save to eeprom
-	EEPROM.put(_ee_addr_v_off, _v_offset);
-	EEPROM.put(_ee_addr_v_scale, _v_scaling);
 }
 
 void A2D_Sense_Board::_init_cal_from_eeprom()
@@ -139,15 +131,18 @@ void A2D_Sense_Board::reset_voltage_calibration()
 {
 	_v_offset = A2D_SENSE_BOARD_DEFAULT_V_OFFSET;
 	_v_scaling = A2D_SENSE_BOARD_V_SCALING;
-	
-	EEPROM.put(_ee_addr_v_off, _v_offset);
-	EEPROM.put(_ee_addr_v_scale, _v_scaling);
 }
 
 void A2D_Sense_Board::reset_current_calibration()
 {
 	_i_offset = A2D_SENSE_BOARD_DEFAULT_I_OFFSET;
 	_i_scaling = A2D_SENSE_BOARD_I_SCALING;
+}
+
+void A2D_Sense_Board::save_calibration()
+{
+	EEPROM.put(_ee_addr_v_off, _v_offset);
+	EEPROM.put(_ee_addr_v_scale, _v_scaling);
 	
 	EEPROM.put(_ee_addr_i_off, _i_offset);
 	EEPROM.put(_ee_addr_i_scale, _i_scaling);
@@ -176,7 +171,7 @@ void A2D_Sense_Board::set_sh_constants(float sh_a, float sh_b, float sh_c)
 
 float A2D_Sense_Board::_convert_adc_voltage_to_current(float voltage)
 {
-	return voltage * _i_scaling + _i_offset;
+	return (voltage - _i_offset) * _i_scaling;
 }
 
 float A2D_Sense_Board::_convert_adc_voltage_to_temperature(float voltage)
@@ -190,5 +185,5 @@ float A2D_Sense_Board::_convert_adc_voltage_to_temperature(float voltage)
 
 float A2D_Sense_Board::_convert_adc_voltage_to_voltage(float voltage)
 {
-	return voltage * _v_scaling + _v_offset;	
+	return (voltage - _v_offset) * _v_scaling;	
 }

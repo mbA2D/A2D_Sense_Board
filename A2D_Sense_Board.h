@@ -35,6 +35,7 @@ class A2D_Sense_Board
 		void reset_calibration();
 		void reset_voltage_calibration();
 		void reset_current_calibration();
+		void save_calibration();
 		void set_led(bool state);
 		void set_adc_i2c_addr(uint8_t addr);
 		void set_sh_constants(float sh_a, float sh_b, float sh_c);
