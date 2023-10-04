@@ -21,6 +21,17 @@ class A2D_Sense_Board
 	public:
 		A2D_Sense_Board(); //constructor
 		
+		
+		//scaling for voltages
+		float _v_scaling; // V/V
+		float _i_scaling; // A/V
+		float _t_scaling; // V/V
+		float _t_current_source; //A
+		
+		float _v_offset; //V
+		float _i_offset; //A
+		
+		
 		//Configuration
 		void init();
 		void reset();
@@ -50,14 +61,7 @@ class A2D_Sense_Board
 		//*********VARIABLES/CLASSES*********
 		float _v_ref;
 
-		//scaling for voltages
-		float _v_scaling; // V/V
-		float _i_scaling; // A/V
-		float _t_scaling; // V/V
-		float _t_current_source; //A
 		
-		float _v_offset; //V
-		float _i_offset; //A
 		uint32_t _serial;
 		int _ee_initialized;
 		
