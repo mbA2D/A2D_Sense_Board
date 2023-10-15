@@ -78,11 +78,29 @@ float A2D_Sense_Board::measure_temperature()
 	return _convert_adc_voltage_to_temperature(voltage);
 }
 
+float A2D_Sense_Board::measure_raw_temperature()
+{
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_TEMP);
+	return _adc->measure_voltage();
+}
+
+float A2D_Sense_Board::measure_raw_current()
+{
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_CURRENT);
+	return _adc->measure_voltage();
+}
+
 float A2D_Sense_Board::measure_current()
 {
 	_adc->set_mux(A2D_SENSE_BOARD_MUX_CURRENT);
 	float voltage = _adc->measure_voltage();
 	return _convert_adc_voltage_to_current(voltage);
+}
+
+float A2D_Sense_Board::measure_raw_voltage()
+{
+	_adc->set_mux(A2D_SENSE_BOARD_MUX_VOLTAGE);
+	return _adc->measure_voltage();
 }
 
 float A2D_Sense_Board::measure_voltage()

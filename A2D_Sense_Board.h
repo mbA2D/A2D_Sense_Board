@@ -40,6 +40,9 @@ class A2D_Sense_Board
 		float measure_temperature();
 		float measure_current();
 		float measure_voltage();
+		float measure_raw_temperature();
+		float measure_raw_current();
+		float measure_raw_voltage();
 		void calibrate_adc_offset();
 		void calibrate_current(float p1_meas, float p1_act, float p2_meas, float p2_act);
 		void calibrate_voltage(float p1_meas, float p1_act, float p2_meas, float p2_act);
