@@ -108,7 +108,7 @@ void A2D_Sense_Board::calibrate_voltage(float p1_meas, float p1_act, float p2_me
 {
 	//calculate new offset (b) and scaling (m) in:  actual = m * measured + b
 	_v_scaling = (p2_act - p1_act) / (p2_meas - p1_meas); //rise in actual / run in measured
-	_v_offset = p2_act - _i_scaling * p2_meas; //b = actual - m * measured
+	_v_offset = p2_act - _v_scaling * p2_meas; //b = actual - m * measured
 }
 
 void A2D_Sense_Board::_init_cal_from_eeprom()
