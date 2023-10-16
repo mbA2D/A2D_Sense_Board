@@ -28,10 +28,9 @@ void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(BAUDRATE);
 	sense_board.init();
-	
 	sense_board.set_adc_i2c_addr(I2C_ADDRESS);
-	
-	delay(2000);
+  delay(100); //Delay for ADC to reset after address change
+
 	Serial.println(F("Calibration values:"));
 	print_existing_calibration();
 
@@ -49,10 +48,13 @@ void setup() {
 		//It does not matter if anything is connected at this point. The ADC's internal mux disconnects the inputs.
 		sense_board.calibrate_adc_offset(); 
 		
-		
 		//Voltage Calibration - point 1
 		Serial.println(F("Short the voltage input. Enter the voltage (should be 0) when complete."));
-		while (Serial.available()==0){}
+		while (Serial.available()==0)
+    {
+      Serial.println(sense_board.measure_raw_voltage());
+      delay(500);
+    }
 		float v_1_act = Serial.parseFloat();
 		Serial.print(F("Actual voltage entered: "));
 		Serial.println(v_1_act, 4);
@@ -63,14 +65,16 @@ void setup() {
 		Serial.println(F("Measurement complete. Remove the short."));
 		//Voltage Calibration - point 2
 		Serial.println(F("Put a voltage source on the input and measure it with a calibrated meter. Enter the voltage when complete."));
-		while (Serial.available()==0){}
+		while (Serial.available()==0)
+    {
+      Serial.println(sense_board.measure_raw_voltage());
+      delay(500);
+    }
 		float v_2_act = Serial.parseFloat();
 		Serial.print(F("Actual voltage entered: "));
 		Serial.println(v_2_act, 4);
 		float v_2_meas = sense_board.measure_raw_voltage();
 		Serial.print(F("Raw measured voltage (at ADC): "));
-		Serial.println(v_2_meas, 4);
-		v_2_meas = v_2_meas / A2D_SENSE_BOARD_V_SCALING + A2D_SENSE_BOARD_DEFAULT_V_OFFSET; //invert calibration to raw adc val
 		Serial.println(v_2_meas, 4);
 		while (Serial.available()){Serial.read();}
 		Serial.println(F("Measurement complete. Remove the voltage source."));
@@ -79,7 +83,11 @@ void setup() {
 		
 		//Current Calibration - point 1
 		Serial.println(F("Ensure no current is flowing through the board. Enter the current (should be 0) when complete."));
-		while (Serial.available()==0){}
+		while (Serial.available()==0)
+    {
+      Serial.println(sense_board.measure_raw_current());
+      delay(500);
+    }
 		float i_1_act = Serial.parseFloat();
 		Serial.print(F("Actual current entered: "));
 		Serial.println(i_1_act, 4);
@@ -90,7 +98,11 @@ void setup() {
 		Serial.println(F("Measurement complete."));
 		//Current Calibration - point 2
 		Serial.println(F("Allow a current to flow through the board and measure it with a calibrated meter. Enter the current when complete."));
-		while (Serial.available()==0){}
+		while (Serial.available()==0)
+    {
+      Serial.println(sense_board.measure_raw_current());
+      delay(500);
+    }
 		float i_2_act = Serial.parseFloat();
 		Serial.print(F("Actual current entered: "));
 		Serial.println(i_2_act, 4);
@@ -102,15 +114,10 @@ void setup() {
 		Serial.println(F("Current calibration complete."));
 		Serial.println();
 		
-		
-		//Calculate the new voltage calibration
-		sense_board.calibrate_voltage(v_1_meas, v_1_act, v_2_meas, v_2_act);
-		
-		//Calculate the new current calibration
-		sense_board.calibrate_current(i_1_meas, i_1_act, i_2_meas, i_2_act);
+		sense_board.calibrate_voltage(v_1_meas, v_1_act, v_2_meas, v_2_act); //Calculate the new voltage calibration
+		sense_board.calibrate_current(i_1_meas, i_1_act, i_2_meas, i_2_act); //Calculate the new current calibration
 		
 		Serial.println(F("New calibration values:"));
-		
 		//The calibration will be loaded from EEPROM in sense_board.init()
 		sense_board.save_calibration();
 		print_existing_calibration();
